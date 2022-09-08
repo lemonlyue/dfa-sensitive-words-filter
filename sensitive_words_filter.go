@@ -42,7 +42,7 @@ func (filter *SensitiveWordsFilter) Build(words []string) {
 }
 
 // Filter Text
-func (filter *SensitiveWordsFilter) Filter(text string) (sensitiveWords []string, replaceText string) {
+func (filter *SensitiveWordsFilter) Filter(text string) (replaceText string, hasSensitiveWords bool) {
 	textChars := []rune(text)
 	textCharsCopy := make([]rune, len(textChars))
 	copy(textCharsCopy, textChars)
@@ -66,24 +66,24 @@ func (filter *SensitiveWordsFilter) Filter(text string) (sensitiveWords []string
 				continue
 			}
 			if temp.End {
-				sensitiveWords = append(sensitiveWords, string(textChars[i:j]))
 				replaceRune(textCharsCopy, filter.replaceText, i, j)
+				hasSensitiveWords = true
 			}
 			temp = temp.FindChild(textChars[j])
 			replaceLength = j
 		}
 
 		if j == length && temp != nil && temp.End {
-			sensitiveWords = append(sensitiveWords, string(textChars[i:length]))
 			end := replaceLength - 1
 			if replaceLength > length - 1 {
 				end = length - 1
 			}
 			replaceRune(textCharsCopy, filter.replaceText, i, end)
+			hasSensitiveWords = true
 		}
 	}
 
-	return sensitiveWords, string(textCharsCopy)
+	return string(textCharsCopy), hasSensitiveWords
 }
 
 // Replace Rune
